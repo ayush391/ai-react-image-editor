@@ -8,6 +8,7 @@ export default function Editor() {
   const [isImgEditorShown, setIsImgEditorShown] = useState(false);
   const [imageSource, setImageSource] = useState<string | HTMLImageElement>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [designState, setDesignState] = useState<any>(null);
 
   const closeImgEditor = () => {
     setIsImgEditorShown(false);
@@ -23,6 +24,14 @@ export default function Editor() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleSaveImage = (editedImageObject: any, designState: any) => {
+    console.log("saved", editedImageObject, designState);
+    const link = document.createElement("a");
+    link.href = editedImageObject.imageBase64;
+    link.download = "edited-image.png";
+    link.click();
   };
 
   return (
@@ -44,9 +53,11 @@ export default function Editor() {
           savingPixelRatio={4}
           previewPixelRatio={4}
           defaultSavedImageType="png"
-          onSave={(editedImageObject, designState) =>
-            console.log("saved", editedImageObject, designState)
-          }
+          onSave={handleSaveImage}
+          onBeforeComplete={(editedImageObject, designState) => {
+            handleSaveImage(editedImageObject, designState);
+            return false;
+          }}
           onClose={closeImgEditor}
           annotationsCommon={{
             fill: "#ff0000",
@@ -54,6 +65,7 @@ export default function Editor() {
           Text={{ text: "Filerobot..." }}
           Rotate={{ angle: 90, componentType: "slider" }}
           Crop={{
+            autoResize: true,
             presetsItems: [
               {
                 titleKey: "classicTv",
@@ -97,6 +109,9 @@ export default function Editor() {
           tabsIds={[TABS.ADJUST, TABS.ANNOTATE, TABS.WATERMARK]} // or {['Adjust', 'Annotate', 'Watermark']}
           defaultTabId={TABS.ANNOTATE} // or 'Annotate'
           defaultToolId={TOOLS.TEXT} // or 'Text'
+          onModify={(designState) => {
+            setDesignState(designState);
+          }}
         />
       )}
     </>
